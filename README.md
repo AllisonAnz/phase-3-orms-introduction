@@ -39,10 +39,7 @@ mastery over writing your very own ORM. It's more important that you understand
 _conceptually_ what an ORM is and how it works. So as long as you're able to
 follow the code and grasp what it's doing, you are in good shape!
 
-Think of this section like building a soap-box car:
-
-![soap box car race](https://upload.wikimedia.org/wikipedia/commons/3/34/SoapboxRace.jpg)
-
-It's a fun project, but ultimately, you wouldn't want to drive one every day! In
-the next section, you'll get the keys to the _actual_ car (Active Record), along
-with our drivers ed course so that you can operate it safely.
+Think of this section like building a soap-box car: It's a fun project, but 
+ultimately, you wouldn't want to drive one every day! In the next section, you'll 
+get the keys to the _actual_ car (Active Record), along with our drivers ed course 
+so that you can operate it safely.
