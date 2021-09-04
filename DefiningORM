@@ -1,0 +1,113 @@
+
+-- Defining Object-Relational Mapping
+
+-- Explain the concept of an ORM and why we build them.
+-- Describe the code that will map your Ruby objects to a database.
+
+-- What is ORM 
+/* Object-Relational Mapping (ORM) is the technique of accessing a relational database 
+    using an object-oriented programming language 
+    ORM is a way for our Ruby Programs to manage database data by "mapping"
+    database tables to classes and instances of classes to rows in those table
+    
+    It is simply a manner in which we implement the code that connects our Ruby program 
+    to our database  */
+
+-- For Exampke, You may have seen code that connects your Ruby program to a given database 
+database_connection = SQLite3::Database.new('db/my_database.db')
+database_connection.execute("Some SQL statement") 
+
+/* An ORM is really just a concept. It is a design patter, a conventional way for us to 
+    organize our programs when we want those programs to connect to a database */
+
+/* When "mapping" our program to a database, we equate classes with database tables and isntances 
+    of those classes with table rows  */
+
+-- You may also see this referred to as "wrapping" a database because we are writing Ruby code the "wraps" or handles SQL
+
+-- Why Use ORM 
+-- Cuts down on repetitive code 
+-- Implementing conventional patterns that are organized and sensical 
+
+--------------------------------------------------------------------------------------------------
+
+-- Cutting Down on Repretition 
+-- Commone code we might use to interact our Ruby Program with our database 
+
+-- We have a program that helps vet office keep track of the pets it treats and those pets owners 
+-- Would have an Onwer class and a Cat class (amount classes to represent other pets)
+-- Our program needs to connect to a database so that the vet office can persist information about its pets and owners 
+
+-- Create a connection to the database:
+database_connection = SQLite3::Database.new('db/pets.db')
+
+-- Create an owners table and a casts table 
+database_connection.execute("CREATE TABLE IF NOT EXISTS cats(id INTEGER PRIMARY KEY, name TEXT, breed TEXT, age INTEGER)")
+
+database_connection.execute("CREATE TABLE IF NOT EXISTS owners(id INTEGER PRIMARY KEY, name TEXT)") 
+
+-- Then we need to regularly insert new cats and owners into these tables 
+<<-SQL
+database_connection.execute("INSERT INTO cats (name, breed, age) VALUES ('Maru', 'scottish fold', 3)")
+
+database_connection.execute("INSERT INTO cats (name, breed, age) VALUES ('Hana', 'tortoiseshell', 1)") 
+SQL
+/* Notice that the lines above are repetitive 
+    The only difference b/n the two lines in which we insert data into the db are actual values */
+
+-- To avoid repetiton, we can write a series of methods to abstract that behavior 
+
+-- We can write a .save method on our Cat class that handles the common action of INSERTing data into the database 
+
+class Cat
+
+  @@all = []
+
+  def initialize(name, breed, age)
+    @name = name
+    @breed = breed
+    @age = age
+    @@all << self
+  end
+
+  def self.all
+    @@all
+  end
+
+  def self.save(name, breed, age, database_connection)
+    database_connection.execute("INSERT INTO cats (name, breed, age) VALUES (?, ?, ?)",name, breed, age)
+  end
+end 
+
+-- Create Some new cats and save them to the database 
+database_connection = SQLite3::Database.new('db/pets.db')
+
+Cat.new("Maru", "scottish fold", 3)
+Cat.new("Hana", "tortoiseshell", 1)
+
+Cat.all.each do |cat|
+  Cat.save(cat.name, cat.breed, cat.age, database_connection)
+end 
+
+/* Here we establish the connect to our db, create two new cats and then iterate over our collection 
+    of cat instances stored in Cat.all method
+    
+    Inside the iteration, we use the Cat.save method, giving it arguments of the data specified 
+    to each cat to INSERT those cat records into the cats table 
+    
+    Our Cat.save method, we have some reusable code, that we can use again and again 
+    to "save" or INSERT, cat records into the database */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
