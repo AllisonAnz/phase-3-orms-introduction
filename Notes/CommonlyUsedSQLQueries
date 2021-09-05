@@ -4,6 +4,12 @@ CREATE TABLE table_name (
   column_2 datatype_2,
 );
 
+--INSERT 
+INSERT INTO bears (id, name, age, sex, color, temperament, alive) VALUES
+(1,"Mr. Chocolate", 20, "M", "dark brown", "calm", 0),
+(2,"Rowdy", 10, "M", "black", "intense", 1),
+(8,null, 20, "M", "black", "aggressive", 0);
+
 -- ALTER 
 -- Modify the structure of db 
 -- adding a new column, change data type, drop or rename 
@@ -66,3 +72,12 @@ SELECT column_name(s)
 FROM table_1
 JOIN table_2
   ON table_1.column_name = table_2.column_name;
+
+  --PRAGMA 
+  -- query a table for the names of its column 
+  PRAGMA table_info(<table name>) 
+  -- thanks to #results_as_hash method will return 
+  -- an array of hashes describing the table itself 
+  -- each hash will contain information about one column 
+  /* [{"cid"=>0, "name"=>"id", "type"=>"INTEGER", "notnull"=>0, "dflt_value"=>nil, ...
+      {"cid"=>1, "name"=>"name", "type"=>"TEXT", "notnull"=>0, "dflt_value"=>nil, "pk"=>0, 0=>1, 1=>"name", 2=>"TEXT", 3=>0, 4=>nil, 5=>0}, ....*/
