@@ -1,0 +1,68 @@
+--CREATE 
+CREATE TABLE table_name (
+  column_1 datatype_1,
+  column_2 datatype_2,
+);
+
+-- ALTER 
+-- Modify the structure of db 
+-- adding a new column, change data type, drop or rename 
+ALTER TABLE table_name 
+ADD column_name datatype;
+
+--DROP 
+-- Delete Db or table 
+DROP TABLE table_name;
+
+--TRUNCATE 
+-- Clearn up table, remove all existing records, but not the table itself 
+TRUNCATE TABLE table_name;
+
+--SELECT-----
+SELECT * FROM table_name;
+
+--See data in some specific columns:
+SELECT column_name(s) FROM table_name;
+
+-- See data from your table based on some conditions 
+SELECT * FROM students
+WHERE state_code = 'CA'
+
+--ORDER BY 
+--clase indicates you want to sort the result set by a praticular column 
+-- either alphabeticallly or numerically 
+SELECT column_name
+FROM table_name
+ORDER BY column_name ASC | DESC;
+
+--UPDATE 
+UPDATE table_name
+SET column_1 = value_1, column_2 = value_2, ...
+WHERE condition;
+
+--DELETE 
+--DELTE FROM used to remove the records from a table based on some conditions 
+--limits the number of rows being affected by the query using the conditions 
+DELETE FROM table_name
+WHERE condition;
+
+--COUNT() 
+--counts the number of rows where the column is not NULL 
+SELECT COUNT(column_name)
+FROM table_name;
+
+--OUTER JOIN 
+--combine rows from different tables even if the join condition is not met 
+-- Every row in the left table is returned in the result set 
+-- If the join condition is not met, then Null values are used to fill in the columns from the right table 
+SELECT column_name(s)
+FROM table_1
+LEFT JOIN table_2
+  ON table_1.column_name = table_2.column_name;
+
+--INNER JOIN 
+-- combine rows from different tables if the join condition is true 
+SELECT column_name(s)
+FROM table_1
+JOIN table_2
+  ON table_1.column_name = table_2.column_name;
