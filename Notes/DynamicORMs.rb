@@ -165,3 +165,148 @@ end
 song = Song.new(name: "Hello", album: "25")
 song.name # => "Hello"
 song.album # => "25" 
+
+# We need to define our #initialize method to take in a hash of names, or keyword arguments 
+# However, we don't want to explicitly name those arugments 
+def initialize(options={})
+  options.each do |property, value|
+    self.send("#{property}=", value)
+  end
+end 
+# We define our method to take in an argument of options, which default to an empty hash 
+# We expect #new to be called with a hash so when we refer to option inside the #initialize method, we expect to be operating on a hash 
+# We iterate over the options hash and use a #send method to interpolate the name of each hash key as a method that we set euql to that key's value 
+# As long as each property has a corresponding attr_accessor, this #initialize method will work 
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Step 4: Writing our ORM methods 
+# Some conventional ORM methods 
+
+# Saving Records in a Dynamic Manner 
+# The basic SQL statement to save a given song 
+INSERT INTO songs (name, album)
+VALUES 'Hello', '25'
+
+# In order to write a method that can INSERT any record to any table, 
+# create the SQL statement without explicitly referencing the songs tale or column names 
+# One step at a time 
+
+#Abstracting the Table Name 
+# Use the method to give us the table name associated to any given class 
+<class name>.table_name
+
+# #save is an instance method 
+# so inside a #save method, self will refer to the instance of the class, not the class itself 
+# In order to use a class method insdie an instance method, do the following 
+def some_instance_method
+  self.class.some_class_method
+end 
+
+# To access the table name we want to INSERT into from inside our #save method 
+self.class.table_name 
+
+# We can wrap up this code in a hand method 
+#table_name_for_insert 
+def table_name_for_insert
+  self.class.table_name
+end 
+
+# Now grab our column names in an abstract manner 
+# Abstract the column names 
+# We already have a handly method for grabbing the column names of the table associated with a given class:;
+self.class.column_names 
+# In the case of our Song class, this returns 
+["id", "name", "album"] 
+
+# The problem is that When we INSERT a row into a db table for the first time 
+# we don't INSERT the id attribute. 
+# In fact, our Ruby object has an id of nil before it is inserted into the table 
+# Our SQL database handles the creationg of an ID for a given table row and 
+# then we will use that ID to assign a value to the orginal object's id attribute 
+
+# So, when we save our RUby object, we should not include the id column name or insert a value 
+# for the id column 
+# Therefor we need to remove "Id" from the array of column names returned from the method called above 
+self.class.column_names.delete_if {|col| col == "id"} 
+# returns => ["name", "album"] 
+
+# Take another look at the INSERT statement 
+INSERT INTO songs (name, album)
+VALUES 'Hello', '25'; 
+
+# The column names in the statement are comma separated 
+# Our column names returned by the code above are in an array 
+# Turn them into a comma separated list, contained in the string 
+self.class.column_names.delete_if {|col| col == "id"}.join(", ") 
+# returns => "name, album" 
+
+# Now we have all the code we need to grab a comma separated list of the column names of the table associated with any given class
+# wrap up this code in a handy method #col_names_for_insert 
+def col_names_for_insert
+  self.class.column_names.delete_if {|col| col == "id"}.join(", ")
+end 
+
+# Now we need an abstract way to grab the values we want to insert 
+
+# Abstract the Values to Insert 
+# When inserting a row into our table, we grab the values to insert by grabbing the values of that instance's attr_reader 
+# How can we grab these values without calling the reader methods by name?
+
+# We know that the names of the attr_accessor method were derived from the column names of the table associated to our class 
+# Those column names are stored in the #column_names class method
+
+# We know how to programmatically invoke a method, without knowing the exact name of the method, using the #send method 
+# Iterate over the column names stored in #column_names 
+# use the #send method with each individual column name to invoke the method by that same name 
+# and capture the return value 
+values = []
+
+self.class.column_names.each do |col_name|
+  values << "'#{send(col_name)}'" unless send(col_name).nil?
+end 
+# Above we push the return value of invoking a method via the #send method, unless the value is nilas it would be for the id method before a record is saved, for instance)
+
+# Notice that we are wrapping the return value in a string 
+# This is because we are trying to craft a string of SQL 
+# notice that each individual value will be envlosed in single quotes ' ', inside that string 
+# that is because the final SQL string will need to look like 
+INSERT INTO songs (name, album)
+VALUES 'Hello', '25'; 
+
+# SQL expects us to pass in each column value in single quouts 
+# The above code however will result in a values array 
+["'the name of the song'", "'the album of the song'"] 
+
+# We need to comma separate values for our SQL statement 
+# join this array into a string 
+values.join(", ") 
+
+# Wrap up this code in a method #values_for_insert 
+def values_for_insert
+  values = []
+  self.class.column_names.each do |col_name|
+    values << "'#{send(col_name)}'" unless send(col_name).nil?
+  end
+  values.join(", ")
+end 
+
+# Now that we have abstracted ways to grab each of the constituent parts of the SQL statement to save a record 
+# put them all together in the #save method 
+#save method 
+def save
+  DB[:conn].execute("INSERT INTO #{table_name_for_insert} (#{col_names_for_insert}) VALUES (?)", [values_for_insert])
+
+  @id = DB[:conn].execute("SELECT last_insert_rowid() FROM #{table_name_for_insert}")[0][0]
+end 
+
+# Using string interpolation for a SQL query creates a SQL vulnerability, which we've stated is a bad idea 
+# as it creates a security issue, however, we're using these examples to illustrace how dynamic ORMs work 
+
+#-------------------------------------------------------------------------------------------------------------------------
+# Selecting Records in a Dynamic Manner 
+# build a #find_by_name method 
+def self.find_by_name(name)
+  DB[:conn].execute("SELECT * FROM #{self.table_name} WHERE name = ?", [name])
+end 
+# This method is dynamic and abstract because it does not reference the tabme name explicitly 
+# Instead it uses the #table_name class method that will return the table name associated with any given class
